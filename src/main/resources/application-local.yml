@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: kafka-replay
+
+mock:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer-group: mocktail-kafka-replay
+  topics: "topic-a,\
+    topic-b,\
+    topic-c,\
+    topic-d,\
+    topic-e,\
+    topic-f"
