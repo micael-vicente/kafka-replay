@@ -5,8 +5,5 @@ public enum ConditionType {
     NOT_EQUAL,
     EQUAL,
     NOT_ONE_OF,
-    GREATER_THAN,
-    LESS_THAN,
-    GREATER_THAN_EQUAL_TO,
-    LESS_THAN_EQUAL_TO
+    GREATER_THAN_EQUAL_TO
 }

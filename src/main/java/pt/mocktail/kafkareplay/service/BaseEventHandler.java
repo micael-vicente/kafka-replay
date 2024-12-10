@@ -22,17 +22,24 @@ import static java.util.function.Predicate.not;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FixtureHandler {
+public class BaseEventHandler implements EventHandler {
     private final MockerProducer producer;
     private final FixtureRepository repo;
 
-    public void handleMessage(String origin, String message) {
-        Collection<Fixture> fixtures = repo.getAllByOrigin(origin);
-        fixtures.forEach(f -> handleFixture(f, message));
+    @Override
+    public String getQualifier() {
+        return "BASE_HANDLER";
     }
 
-    private void handleFixture(Fixture fixture, String message) {
-        String innerMessage = JsonPath.parse(message).read("$.entityData", String.class);
+    @Override
+    public void handleEvent(Event event) {
+        Collection<Fixture> fixtures = repo.getAllByOrigin(event.getOrigin());
+        fixtures.forEach(f -> handleFixture(f, event));
+    }
+
+    private void handleFixture(Fixture fixture, Event event) {
+
+        String message = getMessage(event);
         boolean proceed = true;
 
         if(!CollectionUtils.isEmpty(fixture.getConditions())) {
@@ -41,7 +48,7 @@ public class FixtureHandler {
                     .collect(Collectors.toSet());
 
             proceed = envelopConditions.stream()
-                    .allMatch(condition -> conditionIsMet(condition, message));
+                    .allMatch(condition -> conditionIsMet(condition, event.getMessage()));
 
             if(!proceed) {
                 log.info("Envelop conditions not met for message from origin: {}", fixture.getOrigin());
@@ -54,12 +61,12 @@ public class FixtureHandler {
                     .collect(Collectors.toSet());
 
             proceed = innerMessageConditions.stream()
-                    .allMatch(condition -> conditionIsMet(condition, innerMessage));
+                    .allMatch(condition -> conditionIsMet(condition, message));
         }
 
         if(proceed) {
             log.info("Sub conditions met for message from origin: {}", fixture.getOrigin());
-            String response = applyMappings(innerMessage, fixture.getResponse(), fixture.getMappings());
+            String response = applyMappings(message, fixture.getResponse(), fixture.getMappings());
             producer.sendMessage(fixture.getDestination(), response);
         } else {
             log.info("Sub conditions not met for message from origin: {}", fixture.getOrigin());
@@ -136,5 +143,13 @@ public class FixtureHandler {
         }
 
         return result;
+    }
+
+    private String getMessage(Event event) {
+        if(event.isEnvelopedMessage()) {
+            return JsonPath.parse(event.getMessage()).read(event.getFieldContainingMessage(), String.class);
+        } else {
+            return event.getMessage();
+        }
     }
 }
