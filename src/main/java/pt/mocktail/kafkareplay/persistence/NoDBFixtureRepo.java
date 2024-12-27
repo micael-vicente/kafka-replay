@@ -1,12 +1,16 @@
 package pt.mocktail.kafkareplay.persistence;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Repository
+@ConditionalOnProperty(prefix = "mock", name = "persistence", havingValue = "MEMORY")
 public class NoDBFixtureRepo implements FixtureRepository {
 
     private static final Collection<Fixture> REPO;
@@ -18,6 +22,7 @@ public class NoDBFixtureRepo implements FixtureRepository {
     }
 
     static {
+        log.info("Using memory as persistence mechanism");
         REPO = List.of(
                 getEventExampleFixture()
         );

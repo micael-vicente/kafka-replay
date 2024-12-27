@@ -1,21 +1,26 @@
-package pt.mocktail.kafkareplay.service;
+package pt.mocktail.kafkareplay.service.json;
 
 import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import pt.mocktail.kafkareplay.persistence.*;
+import pt.mocktail.kafkareplay.persistence.Condition;
+import pt.mocktail.kafkareplay.persistence.ConditionType;
+import pt.mocktail.kafkareplay.persistence.Fixture;
+import pt.mocktail.kafkareplay.persistence.FixtureMapping;
+import pt.mocktail.kafkareplay.persistence.FixtureRepository;
+import pt.mocktail.kafkareplay.service.Event;
+import pt.mocktail.kafkareplay.service.EventHandler;
+import pt.mocktail.kafkareplay.service.MockerProducer;
+import pt.mocktail.kafkareplay.service.json.mapping.MappingStrategy;
 
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.function.Predicate.not;
 
@@ -25,6 +30,7 @@ import static java.util.function.Predicate.not;
 public class BaseEventHandler implements EventHandler {
     private final MockerProducer producer;
     private final FixtureRepository repo;
+    private final MappingStrategy jsonMapper;
 
     @Override
     public String getQualifier() {
@@ -105,44 +111,14 @@ public class BaseEventHandler implements EventHandler {
     private String applyMappings(String originMessage, String responseTemplate, Collection<FixtureMapping> mappings) {
         AtomicReference<String> result = new AtomicReference<>(responseTemplate);
         mappings.forEach(
-                mapping -> result.set(applyMapping(originMessage, result.get(), mapping))
+            mapping -> result.set(applyMapping(originMessage, result.get(), mapping))
         );
 
         return result.get();
     }
 
     private String applyMapping(String originMessage, String responseTemplate, FixtureMapping mapping) {
-        String result = responseTemplate;
-
-        switch (mapping.getType()) {
-            case UUID -> result = responseTemplate.replace("{" + mapping.getTag() + "}", UUID.randomUUID().toString());
-            case CURR_TIMESTAMP -> result = responseTemplate.replace("{" + mapping.getTag() + "}", Instant.now().toString());
-            case CONSTANT -> result = responseTemplate.replace("{" + mapping.getTag() + "}", mapping.getReplacement());
-            case JSON_PATH -> {
-                String replacement = JsonPath.parse(originMessage).read(mapping.getReplacement(), String.class);
-                result = responseTemplate.replace("{" + mapping.getTag() + "}", replacement);
-            }
-            case FOR_EACH -> {
-                int repetitions = JsonPath.parse(originMessage).read(mapping.getReplacement() + ".length()", Integer.class);
-                String replacement = IntStream.range(0, repetitions)
-                    .mapToObj(i -> {
-                        String replacingBlock = mapping.getInnerBlock();
-                        for(FixtureMapping m : mapping.getInnerMappings()) {
-                            FixtureMapping current = FixtureMapping.builder()
-                                    .tag(m.getTag())
-                                    .type(m.getType())
-                                    .replacement(m.getReplacement().replace("[i]", "[" + i + "]"))
-                                    .build();
-                            replacingBlock = applyMapping(originMessage, replacingBlock, current);
-                        }
-                        return replacingBlock;
-                    })
-                    .collect(Collectors.joining(","));
-                result = responseTemplate.replace("{" + mapping.getTag() + "}", replacement);
-            }
-        }
-
-        return result;
+        return jsonMapper.applyMapping(originMessage, responseTemplate, mapping);
     }
 
     private String getMessage(Event event) {
