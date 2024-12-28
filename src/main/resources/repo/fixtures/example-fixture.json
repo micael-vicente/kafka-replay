@@ -1,0 +1,19 @@
+{
+  "origin": "origin.topic",
+  "destination": "destination.topic",
+  "mappings": [
+    {
+      "type": "CONSTANT",
+      "tag": "greeting",
+      "replacement": "Hello world!"
+    }
+  ],
+  "conditions": [
+    {
+      "type": "EQUAL",
+      "jsonPath": "$.request",
+      "value": "greet"
+    }
+  ],
+  "response": "{\"greeting\": \"{greeting}\"}"
+}

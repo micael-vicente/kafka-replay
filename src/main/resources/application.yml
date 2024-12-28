@@ -4,7 +4,8 @@ spring:
 
 mock:
   persistence:
-    type: MEMORY
+    type:
+    folder:
   kafka:
     bootstrap-servers: localhost:9092
     consumer-group: mocktail-kafka-replay

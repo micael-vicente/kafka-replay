@@ -5,6 +5,7 @@ spring:
 mock:
   persistence:
     type: FILESYSTEM
+    folder: "src/main/resources/repo/fixtures"
   kafka:
     bootstrap-servers: localhost:9092
     consumer-group: mocktail-kafka-replay

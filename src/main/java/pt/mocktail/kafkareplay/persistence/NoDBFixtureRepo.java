@@ -10,7 +10,7 @@ import java.util.List;
 
 @Slf4j
 @Repository
-@ConditionalOnProperty(prefix = "mock", name = "persistence", havingValue = "MEMORY")
+@ConditionalOnProperty(prefix = "mock.persistence", name = "type", havingValue = "MEMORY")
 public class NoDBFixtureRepo implements FixtureRepository {
 
     private static final Collection<Fixture> REPO;
