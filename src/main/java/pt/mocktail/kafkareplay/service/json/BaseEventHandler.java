@@ -6,19 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import pt.mocktail.kafkareplay.persistence.Condition;
-import pt.mocktail.kafkareplay.persistence.ConditionType;
 import pt.mocktail.kafkareplay.persistence.Fixture;
 import pt.mocktail.kafkareplay.persistence.FixtureMapping;
 import pt.mocktail.kafkareplay.persistence.FixtureRepository;
 import pt.mocktail.kafkareplay.service.Event;
 import pt.mocktail.kafkareplay.service.EventHandler;
 import pt.mocktail.kafkareplay.service.MockerProducer;
+import pt.mocktail.kafkareplay.service.json.condition.MatcherStrategy;
 import pt.mocktail.kafkareplay.service.json.mapping.MappingStrategy;
 
-import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -31,6 +28,7 @@ public class BaseEventHandler implements EventHandler {
     private final MockerProducer producer;
     private final FixtureRepository repo;
     private final MappingStrategy jsonMapper;
+    private final MatcherStrategy conditionMatcher;
 
     @Override
     public String getQualifier() {
@@ -80,32 +78,7 @@ public class BaseEventHandler implements EventHandler {
     }
 
     private boolean conditionIsMet(Condition condition, String json) {
-
-        ConditionType type = Optional.ofNullable(condition.getType())
-            .orElse(ConditionType.EQUAL);
-        String attribute = JsonPath.parse(json).read(condition.getJsonPath(), String.class);
-
-        switch (type) {
-            case EQUAL -> {
-                return Objects.equals(attribute, condition.getValue());
-            }
-            case ONE_OF -> {
-                return condition.getValues().contains(attribute);
-            }
-            case NOT_EQUAL -> {
-                return !Objects.equals(attribute, condition.getValue());
-            }
-            case NOT_ONE_OF -> {
-                return !condition.getValues().contains(attribute);
-            }
-            case GREATER_THAN_EQUAL_TO -> {
-                ZonedDateTime other = ZonedDateTime.parse(attribute);
-                return !other.isBefore(ZonedDateTime.now());
-            }
-            default -> {
-                return false;
-            }
-        }
+        return conditionMatcher.meetsCondition(condition, json);
     }
 
     private String applyMappings(String originMessage, String responseTemplate, Collection<FixtureMapping> mappings) {
