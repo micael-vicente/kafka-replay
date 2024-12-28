@@ -3,7 +3,8 @@ spring:
     name: kafka-replay
 
 mock:
-  persistence: MEMORY
+  persistence:
+    type: MEMORY
   kafka:
     bootstrap-servers: localhost:9092
     consumer-group: mocktail-kafka-replay

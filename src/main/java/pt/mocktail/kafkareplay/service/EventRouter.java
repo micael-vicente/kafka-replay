@@ -21,10 +21,10 @@ public class EventRouter {
      */
     public EventRouter(List<EventHandler> handlers) {
         this.handlers = handlers.stream()
-                .collect(Collectors.toMap(
-                    EventHandler::getQualifier,
-                    Function.identity()
-                ));
+            .collect(Collectors.toMap(
+                EventHandler::getQualifier,
+                Function.identity()
+            ));
     }
 
     /**
@@ -33,11 +33,11 @@ public class EventRouter {
      * @param handler the qualifier of the handler to route to
      * @param event the event being routed
      */
-    public void route(String handler, Event event) throws HandlerNotFoundException {
+    public void route(String handler, Event event) {
         Optional.ofNullable(handlers.get(handler))
-                .ifPresentOrElse(
-                        eventHandler -> eventHandler.handleEvent(event),
-                        HandlerNotFoundException::new
-                );
+            .ifPresentOrElse(
+                eventHandler -> eventHandler.handleEvent(event),
+                HandlerNotFoundException::new
+            );
     }
 }

@@ -2,6 +2,9 @@ package pt.mocktail.kafkareplay.service.json;
 
 public class Constants {
 
+    private Constants() {
+    }
+
     public static final String JSON_START_OBJ = "{";
     public static final String JSON_END_OBJ = "}";
     public static final String JSON_ARRAY_LENGTH = ".length()";
