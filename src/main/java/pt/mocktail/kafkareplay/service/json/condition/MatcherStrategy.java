@@ -17,7 +17,7 @@ public class MatcherStrategy {
     public MatcherStrategy(Set<JsonConditionMatcher> mappers) {
         registry = mappers.stream()
             .collect(Collectors.toMap(
-                pt.mocktail.kafkareplay.service.json.condition.JsonConditionMatcher::conditionType, Function.identity(),
+                JsonConditionMatcher::conditionType, Function.identity(),
                 (o, o2) -> o,
                 () -> new EnumMap<>(ConditionType.class)));
     }
