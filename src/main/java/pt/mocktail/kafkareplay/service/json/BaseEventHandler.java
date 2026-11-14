@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static java.util.function.Predicate.not;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -48,7 +46,7 @@ public class BaseEventHandler implements EventHandler {
 
         if(!CollectionUtils.isEmpty(fixture.getConditions())) {
             Collection<Condition> envelopConditions = fixture.getConditions().stream()
-                    .filter(Condition::isOnEnvelope)
+                    .filter(c -> Boolean.TRUE.equals(c.getOnEnvelope()))
                     .collect(Collectors.toSet());
 
             proceed = envelopConditions.stream()
@@ -61,7 +59,7 @@ public class BaseEventHandler implements EventHandler {
 
             log.info("Envelop conditions met for message from origin: {}", fixture.getOrigin());
             Collection<Condition> innerMessageConditions = fixture.getConditions().stream()
-                    .filter(not(Condition::isOnEnvelope))
+                .filter(c -> !Boolean.TRUE.equals(c.getOnEnvelope()))
                     .collect(Collectors.toSet());
 
             proceed = innerMessageConditions.stream()

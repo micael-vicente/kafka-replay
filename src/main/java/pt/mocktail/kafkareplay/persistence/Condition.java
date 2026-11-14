@@ -16,5 +16,5 @@ public class Condition {
     private String jsonPath;
     private String value;
     private Set<String> values;
-    private boolean onEnvelope;
+    private Boolean onEnvelope;
 }
