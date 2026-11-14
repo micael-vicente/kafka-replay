@@ -10,14 +10,10 @@ import java.util.Set;
 
 class ForEachMapperTest {
 
-    private final ForEachMapper mapper = new ForEachMapper();
+    private final ForEachMapper mapper = new ForEachMapper(new MappingStrategy(Set.of(new JsonPathMapper())));
 
     @Test
     void testForEachMappingAppliedCorrectly() {
-
-        MappingStrategy strategy = new MappingStrategy(Set.of(new JsonPathMapper()));
-        mapper.setStrategy(strategy);
-
         String originMessage = "{\"greetings\": [{\"greeting\":\"Hello there!\"}]}";
         String responseTemplate = "{\"result\": \"[{result}]\"}";
         FixtureMapping fixture = FixtureMapping.builder()

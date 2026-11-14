@@ -29,9 +29,9 @@ Config lives in `src/main/resources/application.yml` and
 
 Exactly one of these two `@ConditionalOnProperty` beans is active:
 
-| type | bean | notes |
-|------|------|-------|
-| `MEMORY` | `NoDBFixtureRepo` | hardcoded `List<Fixture>` in code |
+| type         | bean              | notes                                                               |
+|--------------|-------------------|---------------------------------------------------------------------|
+| `MEMORY`     | `NoDBFixtureRepo` | hardcoded `List<Fixture>` in code                                   |
 | `FILESYSTEM` | `FileFixtureRepo` | walks `mock.persistence.folder`, parses each `.json` as a `Fixture` |
 
 ## Architecture & request flow
@@ -80,6 +80,7 @@ Planned (not implemented): `GT, LT, LTE`.
 `applyMapping(String originMessage, String responseTemplate, FixtureMapping)`.
 
 Each mapper replaces the placeholder `{<tag>}` in `responseTemplate`:
+
 - `CONSTANT` → literal `replacement`
 - `JSON_PATH` → value read from `originMessage` via `replacement` as a JsonPath
 - `UUID` → `UUID.randomUUID()`
@@ -100,8 +101,8 @@ Each mapper replaces the placeholder `{<tag>}` in `responseTemplate`:
 }
 ```
 
-`example-fixture.json` is a **format example only** — nothing loads it by default
-(`NoDBFixtureRepo` is hardcoded; `FileFixtureRepo` only under `FILESYSTEM`).
+`example-fixture.json` is a **format example only** — nothing loads it by default (`NoDBFixtureRepo` is hardcoded;
+`FileFixtureRepo` only under `FILESYSTEM`).
 
 ## Known issues / TODOs
 

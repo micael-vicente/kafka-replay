@@ -31,7 +31,7 @@ public class EventRouter {
      * Routes the event to the correct handler.
      *
      * @param handler the qualifier of the handler to route to
-     * @param event the event being routed
+     * @param event   the event being routed
      */
     public void route(String handler, Event event) {
         Optional.ofNullable(handlers.get(handler))

@@ -11,12 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -32,7 +27,7 @@ public class FileFixtureRepo implements FixtureRepository {
 
         Path current = null;
         try (Stream<Path> paths = Files.walk(Paths.get(folder))) {
-            for(Path path : paths.filter(Files::isRegularFile).toList()) {
+            for (Path path : paths.filter(Files::isRegularFile).toList()) {
                 current = path;
                 String fileContent = Files.readString(path);
                 Fixture fixture = mapper.readValue(fileContent, Fixture.class);
@@ -45,8 +40,8 @@ public class FileFixtureRepo implements FixtureRepository {
             }
         } catch (IOException e) {
             String message = Optional.ofNullable(current)
-                    .map(path -> "Failed reading fixture. Filename: " + path.getFileName())
-                    .orElse("Failed to read fixtures from filesystem");
+                .map(path -> "Failed reading fixture. Filename: " + path.getFileName())
+                .orElse("Failed to read fixtures from filesystem");
             throw new FileDBInitException(message, e);
         }
 

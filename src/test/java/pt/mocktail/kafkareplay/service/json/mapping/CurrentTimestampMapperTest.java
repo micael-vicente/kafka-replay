@@ -17,9 +17,9 @@ class CurrentTimestampMapperTest {
         String originMessage = "{\"greeting\": \"Hey there!\"}";
         String responseTemplate = "{\"result\": \"{result}\"}";
         FixtureMapping fixture = FixtureMapping.builder()
-                .tag("result")
-                .type(MappingType.CURR_TIMESTAMP)
-                .build();
+            .tag("result")
+            .type(MappingType.CURR_TIMESTAMP)
+            .build();
 
         String result = mapper.applyMapping(originMessage, responseTemplate, fixture);
 

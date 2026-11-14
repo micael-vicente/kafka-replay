@@ -44,15 +44,15 @@ public class BaseEventHandler implements EventHandler {
         String message = getMessage(event);
         boolean proceed = true;
 
-        if(!CollectionUtils.isEmpty(fixture.getConditions())) {
+        if (!CollectionUtils.isEmpty(fixture.getConditions())) {
             Collection<Condition> envelopConditions = fixture.getConditions().stream()
-                    .filter(c -> Boolean.TRUE.equals(c.getOnEnvelope()))
-                    .collect(Collectors.toSet());
+                .filter(c -> Boolean.TRUE.equals(c.getOnEnvelope()))
+                .collect(Collectors.toSet());
 
             proceed = envelopConditions.stream()
-                    .allMatch(condition -> conditionIsMet(condition, event.getMessage()));
+                .allMatch(condition -> conditionIsMet(condition, event.getMessage()));
 
-            if(!proceed) {
+            if (!proceed) {
                 log.info("Envelop conditions not met for message from origin: {}", fixture.getOrigin());
                 return;
             }
@@ -60,13 +60,13 @@ public class BaseEventHandler implements EventHandler {
             log.info("Envelop conditions met for message from origin: {}", fixture.getOrigin());
             Collection<Condition> innerMessageConditions = fixture.getConditions().stream()
                 .filter(c -> !Boolean.TRUE.equals(c.getOnEnvelope()))
-                    .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
 
             proceed = innerMessageConditions.stream()
-                    .allMatch(condition -> conditionIsMet(condition, message));
+                .allMatch(condition -> conditionIsMet(condition, message));
         }
 
-        if(proceed) {
+        if (proceed) {
             log.info("Sub conditions met for message from origin: {}", fixture.getOrigin());
             String response = applyMappings(message, fixture.getResponse(), fixture.getMappings());
             producer.sendMessage(fixture.getDestination(), response);
@@ -93,7 +93,7 @@ public class BaseEventHandler implements EventHandler {
     }
 
     private String getMessage(Event event) {
-        if(event.isEnvelopedMessage()) {
+        if (event.isEnvelopedMessage()) {
             return JsonPath.parse(event.getMessage()).read(event.getFieldContainingMessage(), String.class);
         } else {
             return event.getMessage();

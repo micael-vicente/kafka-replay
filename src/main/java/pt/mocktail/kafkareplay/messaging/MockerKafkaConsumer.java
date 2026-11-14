@@ -22,11 +22,11 @@ public class MockerKafkaConsumer {
         log.info("Received message from topic: {}", topic);
 
         Event event = Event.builder()
-                .origin(topic)
-                .message(message)
-                .envelopedMessage(true)
-                .fieldContainingMessage("$.entityData")
-                .build();
+            .origin(topic)
+            .message(message)
+            .envelopedMessage(true)
+            .fieldContainingMessage("$.entityData")
+            .build();
 
         try {
             eventRouter.route("BASE_HANDLER", event);
