@@ -16,9 +16,17 @@ public class GTEMatcher extends JsonConditionMatcher {
 
     @Override
     public boolean meetsCondition(Condition condition, String json) {
-        //TODO: to be implemented along with others GT, LT, LTE
         String attribute = getAttribute(condition, json);
-        ZonedDateTime other = ZonedDateTime.parse(attribute);
-        return !other.isBefore(ZonedDateTime.now());
+        ZonedDateTime other = requireTimestamp("attribute", attribute);
+        ZonedDateTime target = requireTimestamp("target value", condition.getValue());
+        return !other.isBefore(target);
+    }
+
+    private ZonedDateTime requireTimestamp(String what, String value) {
+        try {
+            return ZonedDateTime.parse(value);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Cannot parse " + what + ": '" + value + "'", e);
+        }
     }
 }

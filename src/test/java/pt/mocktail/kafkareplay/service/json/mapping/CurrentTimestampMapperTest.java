@@ -7,6 +7,7 @@ import pt.mocktail.kafkareplay.persistence.FixtureMapping;
 import pt.mocktail.kafkareplay.persistence.MappingType;
 
 import java.time.Instant;
+import java.util.Set;
 
 class CurrentTimestampMapperTest {
 
@@ -14,25 +15,27 @@ class CurrentTimestampMapperTest {
 
     @Test
     void testTimestampMappingAppliedCorrectly() {
-        String originMessage = "{\"greeting\": \"Hey there!\"}";
         String responseTemplate = "{\"result\": \"{result}\"}";
         FixtureMapping fixture = FixtureMapping.builder()
-            .tag("result")
-            .type(MappingType.CURR_TIMESTAMP)
-            .build();
+                .tag("result")
+                .type(MappingType.CURR_TIMESTAMP)
+                .build();
 
-        String result = mapper.applyMapping(originMessage, responseTemplate, fixture);
+        String result = mapper.applyMapping("{\"other\": \"x\"}", responseTemplate, fixture);
 
         Assertions.assertNotNull(result);
         Assertions.assertFalse(result.isEmpty());
-        Assertions.assertNotEquals(originMessage, result);
+        Assertions.assertNotEquals(responseTemplate, result);
 
         String timestamp = JsonPath.parse(result).read("$.result", String.class);
 
         Assertions.assertNotNull(timestamp);
         Assertions.assertFalse(timestamp.isEmpty());
-
         Assertions.assertDoesNotThrow(() -> Instant.parse(timestamp));
     }
 
+    @Test
+    void testConditionType() {
+        Assertions.assertEquals(MappingType.CURR_TIMESTAMP, mapper.mappingType());
+    }
 }

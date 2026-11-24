@@ -10,30 +10,54 @@ class JsonPathMapperTest {
 
     private final JsonPathMapper mapper = new JsonPathMapper();
 
+    private FixtureMapping mapping(String replacement) {
+        return FixtureMapping.builder()
+                .tag("result")
+                .type(MappingType.JSON_PATH)
+                .replacement(replacement)
+                .build();
+    }
+
     @Test
     void testJsonPathMappingAppliedCorrectly() {
         String originMessage = "{\"greeting\": \"Hey there!\"}";
-        String expected = JsonPath.parse(originMessage).read("$.greeting", String.class);
-
         String responseTemplate = "{\"result\": \"{result}\"}";
-        FixtureMapping fixture = FixtureMapping.builder()
-            .tag("result")
-            .type(MappingType.JSON_PATH)
-            .replacement("$.greeting")
-            .build();
 
-        String result = mapper.applyMapping(originMessage, responseTemplate, fixture);
+        String result = mapper.applyMapping(originMessage, responseTemplate, mapping("$.greeting"));
 
-        Assertions.assertNotNull(result);
-        Assertions.assertFalse(result.isEmpty());
-        Assertions.assertNotEquals(originMessage, result);
-
-        String value = JsonPath.parse(result).read("$.result", String.class);
-
-        Assertions.assertNotNull(expected);
-        Assertions.assertFalse(expected.isEmpty());
-        Assertions.assertEquals(expected, value);
-
+        Assertions.assertEquals("{\"result\": \"Hey there!\"}", result);
     }
 
+    @Test
+    void testJsonPathMappingReplacesEmptyValue() {
+        String originMessage = "{\"greeting\": \"\"}";
+        String responseTemplate = "{\"result\": \"{result}\"}";
+
+        String result = mapper.applyMapping(originMessage, responseTemplate, mapping("$.greeting"));
+
+        Assertions.assertEquals("{\"result\": \"\"}", result);
+    }
+
+    @Test
+    void testJsonPathMappingThrowsWhenPathIsInvalid() {
+        String originMessage = "{\"greeting\": \"Hey there!\"}";
+        String responseTemplate = "{\"result\": \"{result}\"}";
+
+        Assertions.assertThrows(com.jayway.jsonpath.PathNotFoundException.class,
+                () -> mapper.applyMapping(originMessage, responseTemplate, mapping("$.does.not.exist")));
+    }
+
+    @Test
+    void testJsonPathMappingThrowsWhenFieldIsMissing() {
+        String originMessage = "{\"other\": \"value\"}";
+        String responseTemplate = "{\"result\": \"{result}\"}";
+
+        Assertions.assertThrows(com.jayway.jsonpath.PathNotFoundException.class,
+                () -> mapper.applyMapping(originMessage, responseTemplate, mapping("$.greeting")));
+    }
+
+    @Test
+    void testConditionType() {
+        Assertions.assertEquals(MappingType.JSON_PATH, mapper.mappingType());
+    }
 }

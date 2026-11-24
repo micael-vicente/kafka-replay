@@ -7,32 +7,35 @@ import pt.mocktail.kafkareplay.persistence.FixtureMapping;
 import pt.mocktail.kafkareplay.persistence.MappingType;
 
 import java.util.UUID;
+import java.util.Set;
 
 class UUIDMapperTest {
 
     private final UUIDMapper mapper = new UUIDMapper();
 
     @Test
-    void testUUIDMappingAppliedCorrectly() {
-        String originMessage = "{\"greeting\": \"Hey there!\"}";
+    void testUUIDMappingProducesValidUuid() {
         String responseTemplate = "{\"result\": \"{result}\"}";
         FixtureMapping fixture = FixtureMapping.builder()
-            .tag("result")
-            .type(MappingType.UUID)
-            .build();
+                .tag("result")
+                .type(MappingType.UUID)
+                .build();
 
-        String result = mapper.applyMapping(originMessage, responseTemplate, fixture);
+        String result = mapper.applyMapping("{\"other\": \"x\"}", responseTemplate, fixture);
 
         Assertions.assertNotNull(result);
         Assertions.assertFalse(result.isEmpty());
-        Assertions.assertNotEquals(originMessage, result);
+        Assertions.assertNotEquals(responseTemplate, result);
 
         String resultUUID = JsonPath.parse(result).read("$.result", String.class);
-
         Assertions.assertNotNull(resultUUID);
         Assertions.assertFalse(resultUUID.isEmpty());
 
         Assertions.assertDoesNotThrow(() -> UUID.fromString(resultUUID));
     }
 
+    @Test
+    void testConditionType() {
+        Assertions.assertEquals(MappingType.UUID, mapper.mappingType());
+    }
 }

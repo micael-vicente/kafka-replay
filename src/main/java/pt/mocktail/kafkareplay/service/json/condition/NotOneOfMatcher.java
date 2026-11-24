@@ -4,8 +4,6 @@ import org.springframework.stereotype.Component;
 import pt.mocktail.kafkareplay.persistence.Condition;
 import pt.mocktail.kafkareplay.persistence.ConditionType;
 
-import java.util.Objects;
-
 @Component
 public class NotOneOfMatcher extends JsonConditionMatcher {
 
@@ -17,6 +15,6 @@ public class NotOneOfMatcher extends JsonConditionMatcher {
     @Override
     public boolean meetsCondition(Condition condition, String json) {
         String attribute = getAttribute(condition, json);
-        return !Objects.equals(attribute, condition.getValue());
+        return condition.getValues() != null && !condition.getValues().contains(attribute);
     }
 }
